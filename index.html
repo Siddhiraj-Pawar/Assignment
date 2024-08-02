@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Management</title>
+    <style>
+        
+        #courseManagement {
+            display: none; 
+        }
+    </style>
+</head>
+<body>
+    <h1>Course Management</h1>
+
+    
+    <h2>Login</h2>
+    <form id="loginForm">
+        <input type="email" id="loginEmail" placeholder="Email" required>
+        <input type="password" id="loginPassword" placeholder="Password" required>
+        <button type="submit">Login</button>
+        <p id="loginMessage"></p>
+    </form>
+
+    
+    <div id="courseManagement">
+        
+        <h2>Courses</h2>
+        <button id="fetchCourses">Fetch Courses</button>
+        <ul id="courseList"></ul>
+
+     
+        <h2>Add New Course</h2>
+        <form id="addCourseForm">
+            <input type="text" id="courseName" placeholder="Course Name" required>
+            <input type="number" id="courseFees" placeholder="Fees" required>
+            <input type="text" id="courseDuration" placeholder="Duration" required>
+            <button type="submit">Add Course</button>
+            <p id="addCourseMessage"></p>
+        </form>
+
+        
+        <h2>Update Course</h2>
+        <form id="updateCourseForm">
+            <input type="number" id="updateCourseId" placeholder="Course ID" required>
+            <input type="text" id="updateCourseName" placeholder="New Course Name">
+            <input type="number" id="updateCourseFees" placeholder="New Fees">
+            <input type="text" id="updateCourseDuration" placeholder="New Duration">
+            <button type="submit">Update Course</button>
+            <p id="updateCourseMessage"></p>
+        </form>
+
+       
+        <h2>Delete Course</h2>
+        <form id="deleteCourseForm">
+            <input type="number" id="deleteCourseId" placeholder="Course ID" required>
+            <button type="submit">Delete Course</button>
+            <p id="deleteCourseMessage"></p>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const response = await fetch('http://localhost:3001/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const result = await response.json();
+
+            const loginMessage = document.getElementById('loginMessage');
+            if (result.success) {
+                loginMessage.textContent = 'Login successful';
+                loginMessage.style.color = 'green';
+                document.getElementById('courseManagement').style.display = 'block';
+                document.getElementById('loginForm').style.display = 'none';
+            } else {
+                loginMessage.textContent = 'Login failed';
+                loginMessage.style.color = 'red';
+            }
+        });
+
+        document.getElementById('fetchCourses').addEventListener('click', async () => {
+            const response = await fetch('http://localhost:3001/courses');
+            const courses = await response.json();
+            const courseList = document.getElementById('courseList');
+            courseList.innerHTML = '';
+            courses.forEach(course => {
+                const li = document.createElement('li');
+                li.textContent = `ID: ${course.cid}, Name: ${course.cname}, Fees: ${course.fees}, Duration: ${course.duration}`;
+                courseList.appendChild(li);
+            });
+        });
+
+        document.getElementById('addCourseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const cname = document.getElementById('courseName').value;
+            const fees = document.getElementById('courseFees').value;
+            const duration = document.getElementById('courseDuration').value;
+            const response = await fetch('http://localhost:3001/courses', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cname, fees, duration })
+            });
+            const result = await response.json();
+            document.getElementById('addCourseMessage').textContent = result.message;
+        });
+
+        document.getElementById('updateCourseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('updateCourseId').value;
+            const cname = document.getElementById('updateCourseName').value;
+            const fees = document.getElementById('updateCourseFees').value;
+            const duration = document.getElementById('updateCourseDuration').value;
+            const response = await fetch(`http://localhost:3001/courses/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cname, fees, duration })
+            });
+            const result = await response.json();
+            document.getElementById('updateCourseMessage').textContent = result.message;
+        });
+
+        document.getElementById('deleteCourseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('deleteCourseId').value;
+            const response = await fetch(`http://localhost:3001/courses/${id}`, {
+                method: 'DELETE'
+            });
+            const result = await response.json();
+            document.getElementById('deleteCourseMessage').textContent = result.message;
+        });
+    </script>
+</body>
+</html>
